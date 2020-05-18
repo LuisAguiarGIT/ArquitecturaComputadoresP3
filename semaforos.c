@@ -24,9 +24,12 @@ sbit B3 = P3 ^ 2;
 
 // Contadores de tempo
 int conta_um = 0;
-int conta_cinco = 0;
-int conta_dez = 0;
-int conta_quinze = 0;
+
+// Verifica se já foi da cor anterior
+bool S1_VERD_VERIF = false;
+bool S2_VERD_VERIF = false;
+bool S1_AMAR_VERIF = false;
+bool S2_AMAR_VERIF = false;
 
 void InitTimer0(void);
 
@@ -41,6 +44,7 @@ void main(void)
         //conta = 40   -> 10ms
         //conta = 400  -> 100ms
         //conta = 4000 -> 1s
+        mudaEstadoS1_e_S2();
     }
 }
 
@@ -67,15 +71,45 @@ void InitTimer0(void)
 void Timer0_ISR(void) interrupt 1
 {               // Interrupt indica um evento que requer atenção imediata, quando isto ocorre, o controlador completa a execução da instrução atual
     conta_um++; // e começa a a execução do interrupt service routine, isto comunica ao controlador o que fazer quando a interrupção occorre
-    conta_cinco++;
-    conta_dez++;
-    conta_quinze++;
 }
 
 void mudaEstadoS1_e_S2(void)
 {
-    if (conta_um <= 40000)
+    S1_VERD = ~S1_VERD;
+    S2_VERD = ~S2_VERD;
+    // // Fica verde durante 10 segundos
+    if (conta_um == 40000 && !S1_VERD_VERIF && !S2_VERD_VERIF)
     {
-        S1_VERD = ~S1_VERD
+        S1_VERD = ~S1_VERD;
+        S2_VERD = ~S2_VERD;
+        // Reset no contador pois passou para amarelo
+        conta_um = 0;
+        // Já foi verde
+        S1_VERD_VERIF = ~S1_VERD_VERIF;
+        S2_VERD_VERIF = ~S1_VERD_VERIF;
+    }
+
+    // Fica amarelo durante 5 segundos
+    if (conta_um == 20000 && !S1_VERD_VERIF && !S2_VERD_VERIF)
+    {
+        S1_AMAR = ~S1_AMAR;
+        S2_AMAR = ~S2_AMAR;
+        // Reset no contador pois passou para vermelho
+        conta_um = 0;
+        // Já foi amarelo
+        S1_AMAR_VERIF = ~S1_AMAR_VERIF;
+        S2_AMAR_VERIF = ~S2_AMAR_VERIF;
+    }
+
+    // Fica vermelho durante 15 segundos
+    if (conta_um == 60000 && !S1_AMAR_VERIF && !S2_AMAR_VERIF)
+    {
+        S1_VERM = ~S1_VERM;
+        S2_VERM = ~S2_VERM;
+        // Reset no contador pois passou para vermelho
+        conta_um = 0;
+        // Já foi vermelho
+        S1_VERD_VERIF = ~S1_VERD_VERIF;
+        S2_VERD_VERIF = ~S1_VERD_VERIF;
     }
 }
