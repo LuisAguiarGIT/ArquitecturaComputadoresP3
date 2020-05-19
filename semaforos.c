@@ -62,8 +62,8 @@ void InitTimer0(void)
     TH0 = 0x38;
     TL0 = 0x38;
 
-    //Inicia o timer0
-    TRO = 1;
+    // Config registo TCON
+    IT0 = 1;
 }
 
 void Timer0_ISR(void) interrupt 1
