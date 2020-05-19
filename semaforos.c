@@ -26,17 +26,19 @@ sbit B3 = P3 ^ 2;
 int conta_um = 0;
 
 // Verifica se já foi da cor anterior
-bool S1_VERD_VERIF = false;
-bool S2_VERD_VERIF = false;
-bool S1_AMAR_VERIF = false;
-bool S2_AMAR_VERIF = false;
+int S1_VERD_VERIF = 0;
+int S2_VERD_VERIF = 0;
+int S1_AMAR_VERIF = 0;
+int S2_AMAR_VERIF = 0;
 
 void InitTimer0(void);
+void desligaSemaforos(void);
+void mudaEstadoS1_e_S2(void);
 
 void main(void)
 {
     desligaSemaforos();
-    InitTimer();
+    InitTimer0();
 
     while (1)
     {
@@ -47,7 +49,7 @@ void main(void)
 void InitTimer0(void)
 {
     EA = 1;  // Ativa interrupções globais e do timer 0
-    ET0 = 1; //Ativa interrupção do timer 0
+    ET0 = 1; // Ativa interrupção do timer 0
     EX0 = 1; // Ativa interrupção externa 0
 
     // Configura o timer 0 no modo 2
@@ -78,39 +80,41 @@ void mudaEstadoS1_e_S2(void)
     S1_VERD = ~S1_VERD;
     S2_VERD = ~S2_VERD;
     // // Fica verde durante 10 segundos
-    if (conta_um == 50000 && !S1_VERD_VERIF && !S2_VERD_VERIF)
+    if (conta_um == 50000 && S1_VERD_VERIF == 0 && S2_VERD_VERIF == 0)
     {
         S1_VERD = ~S1_VERD;
         S2_VERD = ~S2_VERD;
         // Reset no contador pois passou para amarelo
         conta_um = 0;
         // Já foi verde
-        S1_VERD_VERIF = !S1_VERD_VERIF;
-        S2_VERD_VERIF = !S1_VERD_VERIF;
+        S1_VERD_VERIF = 1;
+        S2_VERD_VERIF = 1;
     }
 
     // Fica amarelo durante 5 segundos
-    if (conta_um == 25000 && !S1_VERD_VERIF && !S2_VERD_VERIF)
+    if (conta_um == 25000 && S1_VERD_VERIF == 1 && S2_VERD_VERIF == 1)
     {
         S1_AMAR = ~S1_AMAR;
         S2_AMAR = ~S2_AMAR;
         // Reset no contador pois passou para vermelho
         conta_um = 0;
         // Já foi amarelo
-        S1_AMAR_VERIF = !S1_AMAR_VERIF;
-        S2_AMAR_VERIF = !S2_AMAR_VERIF;
+        S1_AMAR_VERIF = 1;
+        S2_AMAR_VERIF = 1;
     }
 
     // Fica vermelho durante 15 segundos
-    if (conta_um == 75000 && !S1_AMAR_VERIF && !S2_AMAR_VERIF)
+    if (conta_um == 75000 && S1_AMAR_VERIF == 1 && !S2_AMAR_VERIF == 1)
     {
         S1_VERM = ~S1_VERM;
         S2_VERM = ~S2_VERM;
         // Reset no contador pois passou para vermelho
         conta_um = 0;
         // Já foi vermelho
-        S1_VERD_VERIF = !S1_VERD_VERIF;
-        S2_VERD_VERIF = !S1_VERD_VERIF;
+        S1_VERD_VERIF = 0;
+        S2_VERD_VERIF = 0;
+        S1_AMAR_VERIF = 0;
+        S2_AMAR_VERIF = 0;
     }
 }
 
