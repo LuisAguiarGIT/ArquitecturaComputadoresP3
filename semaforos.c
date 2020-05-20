@@ -34,14 +34,18 @@ int S2_AMAR_VERIF = 0;
 void InitTimer0(void);
 void desligaSemaforos(void);
 void mudaEstadoS1_e_S2(void);
+void Timer0_ISR(void);
 
 void main(void)
 {
     desligaSemaforos();
     InitTimer0();
+    S1_VERD = ~S1_VERD;
+    S2_VERD = ~S2_VERD;
 
     while (1)
     {
+        Timer0_ISR();
         mudaEstadoS1_e_S2();
     }
 }
@@ -62,8 +66,8 @@ void InitTimer0(void)
     TH0 = 0x38;
     TL0 = 0x38;
 
-    // Config registo TCON
-    IT0 = 1;
+    //Inicia o timer0
+    TR0 = 1;
 }
 
 void Timer0_ISR(void) interrupt 1
@@ -77,44 +81,47 @@ void Timer0_ISR(void) interrupt 1
 
 void mudaEstadoS1_e_S2(void)
 {
-    S1_VERD = ~S1_VERD;
-    S2_VERD = ~S2_VERD;
-    // // Fica verde durante 10 segundos
     if (conta_um == 50000 && S1_VERD_VERIF == 0 && S2_VERD_VERIF == 0)
     {
         S1_VERD = ~S1_VERD;
         S2_VERD = ~S2_VERD;
-        // Reset no contador pois passou para amarelo
-        conta_um = 0;
-        // Já foi verde
+
         S1_VERD_VERIF = 1;
         S2_VERD_VERIF = 1;
+
+        conta_um = 0;
+
+        S1_AMAR = ~S1_AMAR;
+        S2_AMAR = ~S2_AMAR;
     }
 
-    // Fica amarelo durante 5 segundos
-    if (conta_um == 25000 && S1_VERD_VERIF == 1 && S2_VERD_VERIF == 1)
+    if (conta_um == 25000 && S1_AMAR_VERIF == 0 && S2_AMAR_VERIF == 0)
     {
         S1_AMAR = ~S1_AMAR;
         S2_AMAR = ~S2_AMAR;
-        // Reset no contador pois passou para vermelho
-        conta_um = 0;
-        // Já foi amarelo
+
         S1_AMAR_VERIF = 1;
         S2_AMAR_VERIF = 1;
+
+        conta_um = 0;
+
+        S1_VERM = ~S1_VERM;
+        S2_VERM = ~S2_VERM;
     }
 
-    // Fica vermelho durante 15 segundos
-    if (conta_um == 75000 && S1_AMAR_VERIF == 1 && !S2_AMAR_VERIF == 1)
+    if (conta_um == 75000)
     {
         S1_VERM = ~S1_VERM;
         S2_VERM = ~S2_VERM;
-        // Reset no contador pois passou para vermelho
+
         conta_um = 0;
-        // Já foi vermelho
+
         S1_VERD_VERIF = 0;
         S2_VERD_VERIF = 0;
         S1_AMAR_VERIF = 0;
         S2_AMAR_VERIF = 0;
+        S1_VERD = ~S1_VERD;
+        S2_VERD = ~S2_VERD;
     }
 }
 
