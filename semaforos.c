@@ -23,7 +23,7 @@ sbit P4_VERD = P2 ^ 3;
 sbit B3 = P3 ^ 2;
 
 // Contadores de tempo
-int conta_um = 0;
+unsigned int conta_um = 0;
 
 // Verifica se já foi da cor anterior
 int S1_VERD_VERIF = 0;
@@ -40,12 +40,12 @@ void main(void)
 {
     desligaSemaforos();
     InitTimer0();
-    S1_VERD = ~S1_VERD;
+		S1_VERD = ~S1_VERD;
     S2_VERD = ~S2_VERD;
-
+	
+		TR0 = 1;
     while (1)
     {
-        Timer0_ISR();
         mudaEstadoS1_e_S2();
     }
 }
@@ -71,8 +71,8 @@ void InitTimer0(void)
 }
 
 void Timer0_ISR(void) interrupt 1
-{               // Interrupt indica um evento que requer atenção imediata, quando isto ocorre, o controlador completa a execução da instrução atual
-    conta_um++; // e começa a a execução do interrupt service routine, isto comunica ao controlador o que fazer quando a interrupção occorre
+{               
+    conta_um++; 
 }
 
 // void interrupcaoBotao(void) interrupt 0 {
@@ -81,48 +81,50 @@ void Timer0_ISR(void) interrupt 1
 
 void mudaEstadoS1_e_S2(void)
 {
-    if (conta_um == 50000 && S1_VERD_VERIF == 0 && S2_VERD_VERIF == 0)
-    {
-        S1_VERD = ~S1_VERD;
-        S2_VERD = ~S2_VERD;
-
-        S1_VERD_VERIF = 1;
-        S2_VERD_VERIF = 1;
-
-        conta_um = 0;
-
-        S1_AMAR = ~S1_AMAR;
-        S2_AMAR = ~S2_AMAR;
-    }
-
-    if (conta_um == 25000 && S1_AMAR_VERIF == 0 && S2_AMAR_VERIF == 0)
-    {
-        S1_AMAR = ~S1_AMAR;
-        S2_AMAR = ~S2_AMAR;
-
-        S1_AMAR_VERIF = 1;
-        S2_AMAR_VERIF = 1;
-
-        conta_um = 0;
-
-        S1_VERM = ~S1_VERM;
-        S2_VERM = ~S2_VERM;
-    }
-
-    if (conta_um == 75000)
-    {
-        S1_VERM = ~S1_VERM;
-        S2_VERM = ~S2_VERM;
-
-        conta_um = 0;
-
-        S1_VERD_VERIF = 0;
-        S2_VERD_VERIF = 0;
-        S1_AMAR_VERIF = 0;
-        S2_AMAR_VERIF = 0;
-        S1_VERD = ~S1_VERD;
-        S2_VERD = ~S2_VERD;
-    }
+		if(conta_um == 50000) {
+			S1_VERD = ~S1_VERD;
+			S2_VERD = ~S2_VERD;
+			TR0 = 0;
+		}
+//	if (conta_um == 50000 && S1_VERD_VERIF == 0 && S2_VERD_VERIF == 0) {
+//		S1_VERD = ~S1_VERD;
+//		S2_VERD = ~S2_VERD;
+//		
+//		S1_VERD_VERIF = 1;
+//		S2_VERD_VERIF = 1;
+//		
+//		conta_um = 0;
+//		
+//		S1_AMAR = ~S1_AMAR;
+//		S2_AMAR = ~S2_AMAR;
+//	}
+//	
+//	if (conta_um == 25000 && S1_AMAR_VERIF == 0 && S2_AMAR_VERIF == 0) {
+//		S1_AMAR = ~S1_AMAR;
+//		S2_AMAR = ~S2_AMAR;
+//		
+//		S1_AMAR_VERIF = 1;
+//		S2_AMAR_VERIF = 1;
+//		
+//		conta_um = 0;
+//		
+//		S1_VERM = ~S1_VERM;
+//		S2_VERM = ~S2_VERM;
+//	}
+//  
+//	if (conta_um == 75000) {
+//		S1_VERM = ~S1_VERM;
+//		S2_VERM = ~S2_VERM;
+//		
+//		conta_um = 0;
+//		
+//		S1_VERD_VERIF = 0;
+//		S2_VERD_VERIF = 0;
+//		S1_AMAR_VERIF = 0;
+//		S2_AMAR_VERIF = 0;
+//		S1_VERD = ~S1_VERD;
+//		S2_VERD = ~S2_VERD;
+//	}
 }
 
 void desligaSemaforos(void)
