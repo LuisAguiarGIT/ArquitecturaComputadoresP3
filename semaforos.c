@@ -27,11 +27,7 @@ unsigned int contador = 0;
 
 // Verifica se já foi da cor anterior
 int S1_VERD_VERIF = 0;
-int S2_VERD_VERIF = 0;
 int S1_AMAR_VERIF = 0;
-int S2_AMAR_VERIF = 0;
-int S1_VERM_VERIF = 0;
-int S2_VERM_VERIF = 0;
 
 void InitTimer0(void);
 void desligaSemaforos(void);
@@ -42,9 +38,9 @@ void main(void)
 {
     desligaSemaforos();
     InitTimer0();
-    S1_VERD = ~S1_VERD;
+		S1_VERD = ~S1_VERD;
     S2_VERD = ~S2_VERD;
-
+	
     while (1)
     {
         mudaEstadoS1_e_S2();
@@ -72,8 +68,8 @@ void InitTimer0(void)
 }
 
 void Timer0_ISR(void) interrupt 1
-{
-    contador++;
+{               
+    contador++; 
 }
 
 // void interrupcaoBotao(void) interrupt 0 {
@@ -81,61 +77,51 @@ void Timer0_ISR(void) interrupt 1
 // }
 
 void mudaEstadoS1_e_S2(void)
-{ // Se passaram 10s E S1 E S2 foram verdes durante esse intervalo
-    if (contador == 40000 && S1_VERD_VERIF == 0 && S2_VERD_VERIF == 0)
-    {
-        // Desligar as luzes verdes
-        S1_VERD = ~S1_VERD;
-        S2_VERD = ~S2_VERD;
-
-        // Verde foi ligado
-        S1_VERD_VERIF = 1;
-        S2_VERD_VERIF = 1;
-
-        // Reset do contador
-        contador = 0;
-
-        // Ligar a luz amarela
-        S1_AMAR = ~S1_AMAR;
-        S2_AMAR = ~S2_AMAR;
-    }
-    // Se passaram 5s E Semaforos já foram verdes E Semaforos já foram amarelos durante o intervalo de 5s
-    if (contador == 20000 && S1_VERD_VERIF == 1 && S2_VERD_VERIF == 1 && S1_AMAR_VERIF == 0 && S2_AMAR_VERIF == 0)
-    {
-        // Desligar a luz amarela
-        S1_AMAR = ~S1_AMAR;
-        S2_AMAR = ~S2_AMAR;
-
-        //Amarelo foi ligado
-        S1_AMAR_VERIF = 1;
-        S2_AMAR_VERIF = 1;
-
-        contador = 0;
-
-        // Ligar a luz vermelha
-        S1_VERM = ~S1_VERM;
-        S2_VERM = ~S2_VERM;
-    }
-    // Se passaram 15 segundos E já foi amarelo anteriormente
-    if (contador == 60000 && S1_AMAR_VERIF == 1 && S2_AMAR_VERIF == 1)
-    {
-        // Desligar a luz vermelha
-        S1_VERM = ~S1_VERM;
-        S2_VERM = ~S2_VERM;
-
-        // Reset nos LEDS para o proximo ciclo
-        S1_VERD_VERIF = 0;
-        S2_VERD_VERIF = 0;
-        S1_AMAR_VERIF = 0;
-        S2_AMAR_VERIF = 0;
-
-        // Reset no contador
-        contador = 0;
-
-        // Ligar verde outra vez
-        S1_VERD = ~S1_VERD;
-        S2_VERD = ~S2_VERD;
-    }
+{			// Se passaram 10s E o S1 foi verde 
+  if( contador == 40000 && S1_VERD_VERIF == 0 ) {
+		// Desligar a luz verde
+		S1_VERD = ~S1_VERD;
+    S2_VERD = ~S2_VERD;
+		
+		// Verde foi ligado
+		S1_VERD_VERIF = 1;
+		
+		// Reset do contador
+		contador = 0;
+		
+		// Ligar a luz amarela
+		S1_AMAR = ~S1_AMAR;
+		S2_AMAR = ~S2_AMAR;
+	}
+			// Se passaram 5s E S1 foi amarelo foi ligado durante esse tempo
+	if( contador == 20000 && S1_VERD_VERIF == 1 && S1_AMAR_VERIF == 0 ) {
+		// Desligar a luz amarela
+		S1_AMAR = ~S1_AMAR;
+    S2_AMAR = ~S2_AMAR;
+		
+		//Amarelo foi ligado
+		S1_AMAR_VERIF = 1;
+		
+		contador = 0;
+		
+		// Ligar a luz vermelha
+		S1_VERM = ~S1_VERM;
+		S2_VERM = ~S2_VERM;
+	}
+	if( contador == 60000 && S1_AMAR_VERIF == 1 ) {
+		// Desligar a luz vermelha
+		S1_VERM = ~S1_VERM;
+    S2_VERM = ~S2_VERM;
+		
+		S1_VERD_VERIF = 0;
+		
+		S1_AMAR_VERIF = 0;
+		
+		contador = 0;
+		
+		S1_VERD = ~S1_VERD;
+		S2_VERD = ~S2_VERD;
+	}
 }
 
 void desligaSemaforos(void)
