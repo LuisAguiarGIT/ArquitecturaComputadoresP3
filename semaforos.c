@@ -24,14 +24,21 @@ sbit B3 = P3 ^ 2;
 
 // Contadores de tempo
 unsigned int contadorS1_S2 = 0;
+unsigned int contadorS3 = 0;
+unsigned int contadorP3 = 0;
 
-// Verifica se já foi da cor anterior
+// Verifica se já foi da cor anterior S1
 int S1_VERD_VERIF = 0;
 int S1_AMAR_VERIF = 0;
+
+// Verifica se já foi da cor anterior S3
+int S3_AMAR_VERIF = 0;
+int S3_VERM_VERIF = 0;
 
 void InitTimer0(void);
 void desligaSemaforos(void);
 void mudaEstadoS1_e_S2(void);
+void mudaEstadoS3(void);
 void Timer0_ISR(void);
 
 void main(void)
@@ -45,6 +52,7 @@ void main(void)
     while (1)
     {
         mudaEstadoS1_e_S2();
+        mudaEstadoS3();
     }
 }
 
@@ -71,6 +79,8 @@ void InitTimer0(void)
 void Timer0_ISR(void) interrupt 1
 {
     contadorS1_S2++;
+    contadorS3++;
+    contadorP3++;
 }
 
 // void interrupcaoBotao(void) interrupt 0 {
@@ -112,10 +122,6 @@ void mudaEstadoS1_e_S2(void)
         // Ligar a luz vermelha S1 e S2
         S1_VERM = ~S1_VERM;
         S2_VERM = ~S2_VERM;
-
-        // Apaga LED vermelha S3 e liga verde S3
-        S3_VERM = ~S3_VERM;
-        S3_VERD = ~S3_VERD;
     }
     // DESLIGA VERMELHO E LIGA VERDE
     if (contadorS1_S2 == 60000 && S1_AMAR_VERIF == 1)
@@ -132,12 +138,74 @@ void mudaEstadoS1_e_S2(void)
 
         S1_VERD = ~S1_VERD;
         S2_VERD = ~S2_VERD;
-
-        // Apaga a luz verde e liga a vermelha
-        S3_VERD = ~S3_VERD;
-        S3_VERM = ~S3_VERM;
     }
 }
+
+void mudaEstadoS3(void)
+{
+    if (S1_VERD == 0 || S1_AMAR == 0)
+    {
+        S3_VERM = 0;
+        S3_AMAR = 1;
+        S3_VERD = 1;
+    }
+    else
+    {
+        //Logo S1 e S2 está vermelho
+        // DESLIGA VERMELHO E LIGA VERDE
+        if (contadorS3 == 60000 && S3_VERM_VERIF == 0)
+        {
+            // Desligar a luz verde
+            S3_VERM = ~S3_VERM;
+
+            // Verde foi ligado
+            S3_VERM_VERIF = 1;
+
+            // Reset do contador
+            contadorS3 = 0;
+
+            // Ligar a luz amarela
+            S3_VERD = ~S3_VERD;
+        }
+        // DESLIGA VERDE E LIGA AMARELO
+        if (contadorS3 == 20000 && S3_VERM_VERIF == 1 && S3_AMAR_VERIF == 0)
+        {
+            // Desligar a luz amarela
+            S3_VERD = ~S3_VERD;
+
+            //Amarelo foi ligado
+            S3_AMAR_VERIF = 1;
+
+            contadorS3 = 0;
+
+            // Ligar a luz amarela S3
+            S3_AMAR = ~S3_AMAR;
+        }
+        // DESLIGA VERMELHO E LIGA VERDE
+        if (contadorS3 == 40000 && S3_AMAR_VERIF == 1)
+        {
+            // Desligar a luz amarela
+            S3_AMAR = ~S3_AMAR;
+
+            S3_VERM_VERIF = 0;
+            S3_AMAR_VERIF = 0;
+
+            contadorS3 = 0;
+
+            // Voltar ao ciclo
+            S3_VERM = ~S3_VERM;
+        }
+    }
+}
+
+//void mudaEstadoP3(void) {
+//	if( S3_VERD == 0 || S3_AMAR == 0) {
+//		P3_VERM = 0;
+//		P3_VERD = 1;
+//	} else {
+//
+//	}
+//}
 
 void desligaSemaforos(void)
 {
