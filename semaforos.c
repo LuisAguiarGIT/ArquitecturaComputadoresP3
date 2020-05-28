@@ -17,7 +17,7 @@ sbit S3_VERD = P2 ^ 0;
 
 // Semáforo peões
 sbit P3_VERM = P2 ^ 4;
-sbit P4_VERD = P2 ^ 3;
+sbit P3_VERD = P2 ^ 3;
 
 // Botão dos peões
 sbit B3 = P3 ^ 2;
@@ -35,11 +35,17 @@ int S1_AMAR_VERIF = 0;
 int S3_AMAR_VERIF = 0;
 int S3_VERM_VERIF = 0;
 
+// Verifica se já passaram 10 segundos
+int S3_DEZ_FLAG = 0;
+
 void InitTimer0(void);
+void Timer0_ISR(void);
+void InitTimer1(void);
+void Timer1_ISR(void);
 void desligaSemaforos(void);
 void mudaEstadoS1_e_S2(void);
 void mudaEstadoS3(void);
-void Timer0_ISR(void);
+void mudaEstadoP3(void);
 
 void main(void)
 {
@@ -53,6 +59,7 @@ void main(void)
     {
         mudaEstadoS1_e_S2();
         mudaEstadoS3();
+        mudaEstadoP3();
     }
 }
 
@@ -80,6 +87,21 @@ void Timer0_ISR(void) interrupt 1
 {
     contadorS1_S2++;
     contadorS3++;
+}
+
+void InitTimer1(void)
+{
+    ET1 = 1;
+    EX1 = 1;
+
+    TMOD = 0x06;
+    TL0 = 0x06;
+
+    TR1 = 1;
+}
+
+void Timer1_ISR(void) interrupt 1
+{
     contadorP3++;
 }
 
@@ -151,14 +173,20 @@ void mudaEstadoS3(void)
     }
     else
     {
-        //Logo S1 e S2 está vermelho
+        if (contadorS3 == 40000)
+        {
+            S3_DEZ_FLAG = 1;
+        }
+        // Logo S1 e S2 está vermelho
         // DESLIGA VERMELHO E LIGA VERDE
         if (contadorS3 == 60000 && S3_VERM_VERIF == 0)
         {
             // Desligar a luz verde
             S3_VERM = ~S3_VERM;
 
-            // Verde foi ligado
+            S3_DEZ_FLAG = 0;
+
+            // Vermelho foi ligado
             S3_VERM_VERIF = 1;
 
             // Reset do contador
@@ -181,7 +209,7 @@ void mudaEstadoS3(void)
             // Ligar a luz amarela S3
             S3_AMAR = ~S3_AMAR;
         }
-        // DESLIGA VERMELHO E LIGA VERDE
+        // DESLIGA AMARELO E LIGA VERMELHO
         if (contadorS3 == 40000 && S3_AMAR_VERIF == 1)
         {
             // Desligar a luz amarela
@@ -189,6 +217,7 @@ void mudaEstadoS3(void)
 
             S3_VERM_VERIF = 0;
             S3_AMAR_VERIF = 0;
+            S3_DEZ_FLAG = 0;
 
             contadorS3 = 0;
 
@@ -198,14 +227,26 @@ void mudaEstadoS3(void)
     }
 }
 
-//void mudaEstadoP3(void) {
-//	if( S3_VERD == 0 || S3_AMAR == 0) {
-//		P3_VERM = 0;
-//		P3_VERD = 1;
-//	} else {
-//
-//	}
-//}
+void mudaEstadoP3(void)
+{
+    if (S3_VERD == 0 || S3_AMAR == 0)
+    {
+        P3_VERM = 0;
+        P3_VERD = 1;
+    }
+    else
+    {
+        if (S3_DEZ_FLAG = 1 && S3_VERM == 0)
+        {
+            InitTimer1();
+            if (contadorP3 == 4000)
+            {
+                P3_VERM = ~P3_VERM;
+                contadorP3 = 0;
+            }
+        }
+    }
+}
 
 void desligaSemaforos(void)
 {
@@ -225,5 +266,5 @@ void desligaSemaforos(void)
 
     // Semáforo peões
     P3_VERM = 1;
-    P4_VERD = 1;
+    P3_VERD = 1;
 }
